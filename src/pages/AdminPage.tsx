@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Shield, Plus, Trash2, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import heroImage from "@/assets/hero-security.jpg";
+import styles from './AdminPage.module.css';
 
 interface CategoryEmail {
   id: string;
@@ -22,7 +24,6 @@ export const AdminPage = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load saved category emails from localStorage
     const saved = localStorage.getItem('categoryEmails');
     if (saved) {
       setCategoryEmails(JSON.parse(saved));
@@ -101,18 +102,26 @@ export const AdminPage = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-primary/10 rounded-full">
-                <Shield className="w-8 h-8 text-primary" />
+      <div className={styles.loginContainer}>
+        {/* Background Image */}
+        <div 
+          className={styles.backgroundImage}
+          style={{ backgroundImage: `url(${heroImage})` }}
+        >
+          <div className={styles.overlay} />
+        </div>
+        
+        <Card className={styles.loginCard}>
+          <CardHeader className={styles.loginHeader}>
+            <div className={styles.iconWrapper}>
+              <div className={styles.iconContainer}>
+                <Shield className={styles.shieldIcon} />
               </div>
             </div>
             <CardTitle>Acesso Administrativo</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className={styles.loginForm}>
               <div>
                 <Label htmlFor="username">Usuário</Label>
                 <Input
@@ -132,7 +141,7 @@ export const AdminPage = () => {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className={styles.loginButton}>
                 Entrar
               </Button>
             </form>
@@ -143,13 +152,21 @@ export const AdminPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <Settings className="w-8 h-8 text-primary" />
-              <h1 className="text-3xl font-bold">Painel Administrativo</h1>
+    <div className={styles.adminContainer}>
+      {/* Background Image */}
+      <div 
+        className={styles.backgroundImage}
+        style={{ backgroundImage: `url(${heroImage})` }}
+      >
+        <div className={styles.overlay} />
+      </div>
+      
+      <div className={styles.container}>
+        <div className={styles.maxWidth}>
+          <div className={styles.header}>
+            <div className={styles.headerTitle}>
+              <Settings className={styles.settingsIcon} />
+              <h1 className={styles.title}>Painel Administrativo</h1>
             </div>
             <Button 
               variant="outline" 
@@ -163,15 +180,15 @@ export const AdminPage = () => {
           </div>
 
           {/* Add New Mapping */}
-          <Card className="mb-8">
+          <Card className={styles.addMappingCard}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Plus className="w-5 h-5" />
+              <CardTitle className={styles.cardTitleWithIcon}>
+                <Plus className={styles.plusIcon} />
                 Vincular Email à Categoria
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className={styles.formGrid}>
                 <div>
                   <Label htmlFor="category">Categoria</Label>
                   <Select 
@@ -203,9 +220,9 @@ export const AdminPage = () => {
                     onChange={(e) => setNewMapping({...newMapping, email: e.target.value})}
                   />
                 </div>
-                <div className="flex items-end">
-                  <Button onClick={handleAddMapping} className="w-full">
-                    <Plus className="w-4 h-4 mr-2" />
+                <div className={styles.buttonWrapper}>
+                  <Button onClick={handleAddMapping} className={styles.addButton}>
+                    <Plus className={styles.buttonIcon} />
                     Adicionar
                   </Button>
                 </div>
@@ -220,7 +237,7 @@ export const AdminPage = () => {
             </CardHeader>
             <CardContent>
               {categoryEmails.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
+                <p className={styles.emptyMessage}>
                   Nenhuma vinculação configurada ainda.
                 </p>
               ) : (
@@ -243,7 +260,7 @@ export const AdminPage = () => {
                             size="sm"
                             onClick={() => handleDeleteMapping(item.id)}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className={styles.trashIcon} />
                           </Button>
                         </TableCell>
                       </TableRow>

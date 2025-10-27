@@ -8,10 +8,14 @@ import { Input } from "@/components/ui/input";
 import { FileText, Send, Upload, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-
+import heroImage from "@/assets/hero-security.jpg";
+import styles from './ReportPage.module.css';
+import categories from "@/data/categories.json";
+ 
 export const ReportPage = () => {
   const [formData, setFormData] = useState({
     category: "",
+    email: "",
     description: "",
     location: "",
     image: null as File | null
@@ -29,15 +33,17 @@ export const ReportPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    const selectedEmail = formData.email || "nao-disponivel@exemplo.com";
     toast({
       title: "Denúncia enviada com sucesso!",
-      description: "Sua denúncia foi registrada e será analisada pelas autoridades competentes.",
+      description: `Sua denúncia foi registrada. Categoria: ${formData.category} — e-mail de destino (fictício): ${selectedEmail}`,
       duration: 5000,
     });
     
     // Reset form
     setFormData({
       category: "",
+      email: "",
       description: "",
       location: "",
       image: null
@@ -45,49 +51,61 @@ export const ReportPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center mb-8">
+    <div className={styles.container}>
+      {/* Background Image */}
+      <div 
+        className={styles.backgroundImage}
+        style={{ backgroundImage: `url(${heroImage})` }}
+      >
+        <div className={styles.overlay} />
+      </div>
+      
+      <div className={styles.wrapper}>
+        <div className={styles.maxWidth}>
+          <div className={styles.header}>
             <Button 
               variant="ghost" 
               onClick={() => navigate('/')}
-              className="mr-4"
+              className={styles.backButton}
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className={styles.backIcon} />
               Voltar
             </Button>
-            <h1 className="text-2xl font-bold">Nova Denúncia</h1>
+            <h1 className={styles.title}>Nova Denúncia</h1>
           </div>
 
-          <Card className="shadow-lg">
+          <Card className={styles.card}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-primary" />
+              <CardTitle className={styles.cardTitle}>
+                <FileText className={styles.fileIcon} />
                 Formulário de Denúncia Anônima
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className={styles.form}>
                 <div>
-                  <Label htmlFor="category">Categoria da Denúncia *</Label>
-                  <Select 
-                    value={formData.category} 
-                    onValueChange={(value) => setFormData({...formData, category: value})}
+                  <Label htmlFor="category">Categoria *</Label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => {
+                      const cat = categories.find((c: any) => c.key === value);
+                      setFormData({ 
+                        ...formData, 
+                        category: value,
+                        email: cat ? cat.email : ""
+                      });
+                    }}
                     required
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="corruption">Corrupção</SelectItem>
-                      <SelectItem value="harassment">Assédio</SelectItem>
-                      <SelectItem value="violence">Violência</SelectItem>
-                      <SelectItem value="environmental">Crime Ambiental</SelectItem>
-                      <SelectItem value="discrimination">Discriminação</SelectItem>
-                      <SelectItem value="fraud">Fraude</SelectItem>
-                      <SelectItem value="theft">Roubo</SelectItem>
-                      <SelectItem value="other">Outros</SelectItem>
+                      {categories.map((c: any) => (
+                        <SelectItem key={c.key} value={c.key}>
+                          {c.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -107,7 +125,7 @@ export const ReportPage = () => {
                   <Textarea
                     id="description"
                     placeholder="Descreva os fatos de forma detalhada, incluindo datas, pessoas envolvidas e circunstâncias..."
-                    className="min-h-[120px]"
+                    className={styles.textarea}
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                     required
@@ -116,24 +134,24 @@ export const ReportPage = () => {
 
                 <div>
                   <Label htmlFor="image">Anexar Imagem (Opcional)</Label>
-                  <div className="mt-2">
+                  <div className={styles.fileInputWrapper}>
                     <Input
                       id="image"
                       type="file"
                       accept="image/*"
                       onChange={handleImageChange}
-                      className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-primary file:text-primary-foreground"
+                      className={styles.fileInput}
                     />
                     {formData.image && (
-                      <p className="text-sm text-muted-foreground mt-2">
+                      <p className={styles.fileSelected}>
                         Arquivo selecionado: {formData.image.name}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="bg-muted p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
+                <div className={styles.infoBox}>
+                  <p className={styles.infoText}>
                     <strong>Importante:</strong> Este sistema garante total anonimato e segue as diretrizes da LGPD. 
                     Não coletamos dados pessoais e utilizamos criptografia de ponta a ponta.
                   </p>
@@ -141,11 +159,11 @@ export const ReportPage = () => {
 
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className={styles.submitButton}
                   size="lg"
                   disabled={!formData.description || !formData.category}
                 >
-                  <Send className="w-4 h-4 mr-2" />
+                  <Send className={styles.sendIcon} />
                   Enviar Denúncia Anônima
                 </Button>
               </form>

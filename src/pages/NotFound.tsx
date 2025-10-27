@@ -1,21 +1,37 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import heroImage from "@/assets/hero-security.jpg";
+import styles from './NotFound.module.css';
 
 const NotFound = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
-  }, [location.pathname]);
+    // Redireciona automaticamente para a página inicial
+    navigate("/", { replace: true });
+  }, [location.pathname, navigate]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">404</h1>
-        <p className="mb-4 text-xl text-gray-600">Oops! Page not found</p>
-        <a href="/" className="text-blue-500 underline hover:text-blue-700">
-          Return to Home
-        </a>
+    <div className={styles.container}>
+      {/* Background Image */}
+      <div 
+        className={styles.backgroundImage}
+        style={{ backgroundImage: `url(${heroImage})` }}
+      >
+        <div className={styles.overlay} />
+      </div>
+      
+      {/* Content */}
+      <div className={styles.content}>
+        <div className={styles.textCenter}>
+          <h1 className={styles.title}>404</h1>
+          <p className={styles.subtitle}>Oops! Página não encontrada — redirecionando...</p>
+          <a href="/" className={styles.link}>
+            Voltar para o início
+          </a>
+        </div>
       </div>
     </div>
   );

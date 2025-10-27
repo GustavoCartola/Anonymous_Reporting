@@ -1,0 +1,59 @@
+.container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.backgroundImage {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    hsl(var(--primary) / 0.9), 
+    hsl(var(--primary) / 0.8), 
+    hsl(var(--accent) / 0.9)
+  );
+}
+
+.content {
+  position: relative;
+  z-index: 10;
+}
+
+.textCenter {
+  text-align: center;
+  color: white;
+}
+
+.title {
+  margin-bottom: 1rem;
+  font-size: 4rem;
+  font-weight: bold;
+}
+
+.subtitle {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.link {
+  color: white;
+  text-decoration: underline;
+  font-size: 1.125rem;
+  transition: color 0.3s ease;
+}
+
+.link:hover {
+  color: rgba(255, 255, 255, 0.8);
+}

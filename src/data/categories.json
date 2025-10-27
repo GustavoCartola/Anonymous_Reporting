@@ -1,0 +1,27 @@
+[
+  {
+    "key": "harassment",
+    "label": "Assédio",
+    "email": "assedio@exemplo.com"
+  },
+  {
+    "key": "corruption",
+    "label": "Corrupção",
+    "email": "corrupcao@exemplo.com"
+  },
+  {
+    "key": "environmental",
+    "label": "Crime Ambiental",
+    "email": "meioambiente@exemplo.com"
+  },
+  {
+    "key": "theft",
+    "label": "Furto/Roubo",
+    "email": "roubo@exemplo.com"
+  },
+  {
+    "key": "animal_abuse",
+    "label": "Maus tratos aos animais",
+    "email": "animais@exemplo.com"
+  }
+]
