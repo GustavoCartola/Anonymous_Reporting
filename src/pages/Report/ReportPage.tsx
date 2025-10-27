@@ -5,9 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { FileText, Send, Upload, ArrowLeft } from "lucide-react";
+import { FileText, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-security.jpg";
 import styles from './ReportPage.module.css';
 import categories from "@/data/categories.json";
@@ -21,7 +20,6 @@ export const ReportPage = () => {
     image: null as File | null
   });
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -63,14 +61,6 @@ export const ReportPage = () => {
       <div className={styles.wrapper}>
         <div className={styles.maxWidth}>
           <div className={styles.header}>
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/')}
-              className={styles.backButton}
-            >
-              <ArrowLeft className={styles.backIcon} />
-              Voltar
-            </Button>
             <h1 className={styles.title}>Nova Denúncia</h1>
           </div>
 
