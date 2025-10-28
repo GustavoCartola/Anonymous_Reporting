@@ -60,10 +60,6 @@ export const ReportPage = () => {
       
       <div className={styles.wrapper}>
         <div className={styles.maxWidth}>
-          <div className={styles.header}>
-            <h1 className={styles.title}>Nova Denúncia</h1>
-          </div>
-
           <Card className={styles.card}>
             <CardHeader>
               <CardTitle className={styles.cardTitle}>
@@ -74,7 +70,9 @@ export const ReportPage = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className={styles.form}>
                 <div>
-                  <Label htmlFor="category">Categoria *</Label>
+                  <Label htmlFor="category">
+                    Categoria <span className={styles.required}>*</span>
+                  </Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value) => {
@@ -101,7 +99,9 @@ export const ReportPage = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="location">Local (Opcional)</Label>
+                  <Label htmlFor="location">
+                    Local (Opcional)
+                  </Label>
                   <Input
                     id="location"
                     placeholder="Cidade, bairro ou endereço aproximado"
@@ -111,7 +111,9 @@ export const ReportPage = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Descrição detalhada *</Label>
+                  <Label htmlFor="description">
+                    Descrição detalhada <span className={styles.required}>*</span>
+                  </Label>
                   <Textarea
                     id="description"
                     placeholder="Descreva os fatos de forma detalhada, incluindo datas, pessoas envolvidas e circunstâncias..."
@@ -123,7 +125,9 @@ export const ReportPage = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="image">Anexar Imagem (Opcional)</Label>
+                  <Label htmlFor="image">
+                    Anexar Imagem (Opcional)
+                  </Label>
                   <div className={styles.fileInputWrapper}>
                     <Input
                       id="image"

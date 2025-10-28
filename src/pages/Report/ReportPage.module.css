@@ -127,6 +127,12 @@
   margin-right: 0.5rem;
 }
 
+.required {
+  color: #e11d48;
+  margin-left: 0.25rem;
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .wrapper {
     padding: 1rem 0.5rem;
