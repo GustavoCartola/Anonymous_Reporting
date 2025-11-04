@@ -119,9 +119,18 @@ export const ReportPage = () => {
                     placeholder="Descreva os fatos de forma detalhada, incluindo datas, pessoas envolvidas e circunstâncias..."
                     className={styles.textarea}
                     value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     required
+                    minLength={100}
                   />
+                  <div
+                    className={`${styles.charCount}`}
+                    aria-live="polite"
+                  >
+                    {formData.description.length}/100 mínimo
+                  </div>
                 </div>
 
                 <div>
@@ -155,7 +164,7 @@ export const ReportPage = () => {
                   type="submit" 
                   className={styles.submitButton}
                   size="lg"
-                  disabled={!formData.description || !formData.category}
+                  disabled={formData.description.length < 100 || !formData.category}
                 >
                   <Send className={styles.sendIcon} />
                   Enviar Denúncia Anônima

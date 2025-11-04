@@ -133,6 +133,13 @@
   font-weight: 600;
 }
 
+.charCount {
+  font-size: 0.875rem;
+  color: #6b7280; /* cinza */
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
 @media (max-width: 768px) {
   .wrapper {
     padding: 1rem 0.5rem;
