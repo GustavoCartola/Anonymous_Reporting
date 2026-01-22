@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { containsPersonalData, retentionInfo, saveReport } from "../../lib/reports";
 import { Button } from "./button";
 import { Card, CardContent, CardHeader, CardTitle } from "./card";
 import { Textarea } from "./textarea";
@@ -8,33 +9,45 @@ import { Input } from "./input";
 import { FileText, Send, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-export const ReportForm = () => {
-  const [formData, setFormData] = useState({
-    category: "",
-    description: "",
-    location: "",
-    evidence: ""
-  });
-  const { toast } = useToast();
+export function ReportForm() {
+  const [category, setCategory] = useState("");
+  const [description, setDescription] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const privacyNotice = useMemo(() => {
+    return "Nenhum dado pessoal é coletado. Todas as denúncias são anônimas.";
+  }, []);
+
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate form submission
-    const trackingCode = `DN${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-    
-    toast({
-      title: "Denúncia enviada com sucesso!",
-      description: `Seu código de acompanhamento: ${trackingCode}`,
-      duration: 5000,
-    });
-    
-    // Reset form
-    setFormData({
-      category: "",
-      description: "",
-      location: "",
-      evidence: ""
-    });
+    setError(null);
+    setSuccess(null);
+
+    // Minimização: só categoria + descrição (sem nome, email, cpf, etc.)
+    if (!category.trim()) {
+      setError("Selecione o tipo da denúncia.");
+      return;
+    }
+    if (!description.trim() || description.trim().length < 10) {
+      setError("Descreva a denúncia com um pouco mais de detalhes (mín. 10 caracteres).");
+      return;
+    }
+
+    // LGPD: bloqueio de dados sensíveis (coleta acidental)
+    const piiMsg = containsPersonalData(description);
+    if (piiMsg) {
+      setError(piiMsg);
+      return;
+    }
+
+    saveReport({ category, description });
+
+    setCategory("");
+    setDescription("");
+    setSuccess(
+      `Denúncia registrada localmente. Retenção: ${retentionInfo.days} dias (${retentionInfo.storage}).`
+    );
   };
 
   return (
@@ -64,12 +77,20 @@ export const ReportForm = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={onSubmit} className="space-y-6">
+                {/* Aviso de anonimato */}
+                <div style={{ padding: 12, border: "1px solid #ddd", borderRadius: 8, marginBottom: 12 }}>
+                  <strong>Anonimato:</strong> {privacyNotice}
+                  <div style={{ marginTop: 6, fontSize: 12, opacity: 0.85 }}>
+                    Retenção: denúncias armazenadas localmente por {retentionInfo.days} dias e removidas automaticamente.
+                  </div>
+                </div>
+
                 <div>
                   <Label htmlFor="category">Categoria da Denúncia</Label>
                   <Select 
-                    value={formData.category} 
-                    onValueChange={(value) => setFormData({...formData, category: value})}
+                    value={category} 
+                    onValueChange={(value) => setCategory(value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione uma categoria" />
@@ -87,23 +108,13 @@ export const ReportForm = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="location">Local (Opcional)</Label>
-                  <Input
-                    id="location"
-                    placeholder="Cidade, bairro ou endereço aproximado"
-                    value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  />
-                </div>
-
-                <div>
                   <Label htmlFor="description">Descrição detalhada *</Label>
                   <Textarea
                     id="description"
                     placeholder="Descreva os fatos de forma detalhada, incluindo datas, pessoas envolvidas e circunstâncias..."
                     className="min-h-[120px]"
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     required
                   />
                 </div>
@@ -114,8 +125,8 @@ export const ReportForm = () => {
                     id="evidence"
                     placeholder="Descreva qualquer evidência que possa ajudar na investigação (documentos, fotos, vídeos, testemunhas, etc.)"
                     className="min-h-[80px]"
-                    value={formData.evidence}
-                    onChange={(e) => setFormData({...formData, evidence: e.target.value})}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                   />
                 </div>
 
@@ -127,11 +138,14 @@ export const ReportForm = () => {
                   </p>
                 </div>
 
+                {error && <div style={{ marginTop: 12, color: "crimson" }}>{error}</div>}
+                {success && <div style={{ marginTop: 12, color: "green" }}>{success}</div>}
+
                 <Button 
                   type="submit" 
                   className="w-full" 
                   size="lg"
-                  disabled={!formData.description || !formData.category}
+                  disabled={!description || !category}
                 >
                   <Send className="w-4 h-4 mr-2" />
                   Enviar Denúncia Anônima
