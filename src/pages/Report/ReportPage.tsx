@@ -10,6 +10,16 @@ import { useToast } from "@/hooks/use-toast";
 import heroImage from "@/assets/hero-security.jpg";
 import styles from './ReportPage.module.css';
 import categories from "@/data/categories.json";
+import { containsPersonalData, retentionInfo, saveReport } from "@/lib/reports";
+
+type CategoryOption = {
+  key: string;
+  label: string;
+  email: string;
+};
+
+const typedCategories = categories as CategoryOption[];
+const TEST_SENDER_EMAIL = "gustacartola@gmail.com";
  
 export const ReportPage = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +29,9 @@ export const ReportPage = () => {
     location: "",
     image: null as File | null
   });
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,24 +41,92 @@ export const ReportPage = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const selectedEmail = formData.email || "nao-disponivel@exemplo.com";
-    toast({
-      title: "Denúncia enviada com sucesso!",
-      description: `Sua denúncia foi registrada. Categoria: ${formData.category} — e-mail de destino (fictício): ${selectedEmail}`,
-      duration: 5000,
-    });
-    
-    // Reset form
-    setFormData({
-      category: "",
-      email: "",
-      description: "",
-      location: "",
-      image: null
-    });
+    setError(null);
+    setSuccess(null);
+
+    const apiUrl = import.meta.env.VITE_REPORT_API_URL || "http://localhost:8787/api/reports/email";
+
+    if (!formData.category.trim()) {
+      setError("Selecione o tipo da denúncia.");
+      return;
+    }
+
+    if (!formData.description.trim() || formData.description.trim().length < 100) {
+      setError("Descreva a denúncia com mais detalhes (mín. 100 caracteres).");
+      return;
+    }
+
+    const piiMsg = containsPersonalData(formData.description);
+    if (piiMsg) {
+      setError(piiMsg);
+      return;
+    }
+
+    const selectedCategory = typedCategories.find((c) => c.key === formData.category);
+    const selectedEmail = selectedCategory?.email || formData.email;
+    if (!selectedEmail) {
+      setError("Nao foi possivel determinar o e-mail do orgao responsavel para a categoria escolhida.");
+      return;
+    }
+
+    const generatedReportNumber = Date.now().toString();
+
+    setIsSubmitting(true);
+
+    try {
+      const payload = new FormData();
+      payload.append("toEmail", selectedEmail);
+      payload.append("fromEmail", TEST_SENDER_EMAIL);
+      payload.append("replyTo", TEST_SENDER_EMAIL);
+      payload.append("reportNumber", generatedReportNumber);
+      payload.append("categoryKey", formData.category);
+      payload.append("categoryLabel", selectedCategory?.label || "Nao informado");
+      payload.append("location", formData.location);
+      payload.append("description", formData.description);
+      if (formData.image) {
+        payload.append("attachment", formData.image);
+      }
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        body: payload,
+      });
+
+      if (!response.ok) {
+        const errorResponse = await response.json().catch(() => ({}));
+        throw new Error(errorResponse?.message || "Falha no servidor de e-mail.");
+      }
+
+      saveReport({
+        category: formData.category,
+        description: formData.description,
+      });
+
+      toast({
+        title: "Denuncia enviada com sucesso!",
+        description: `Denuncia ${generatedReportNumber} encaminhada para ${selectedEmail}.`,
+        duration: 5000,
+      });
+
+      setSuccess(
+        `Denuncia ${generatedReportNumber} enviada para ${selectedEmail} e registrada localmente. Retencao: ${retentionInfo.days} dias (${retentionInfo.storage}).`
+      );
+
+      setFormData({
+        category: "",
+        email: "",
+        description: "",
+        location: "",
+        image: null,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Falha ao encaminhar o e-mail da denuncia.";
+      setError(`${msg} Verifique a configuracao do servidor SMTP e tente novamente.`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -69,6 +150,13 @@ export const ReportPage = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className={styles.form}>
+                <div className={styles.privacyNotice}>
+                  <strong>Anonimato:</strong> Nenhum dado pessoal e coletado. Todas as denuncias sao anonimas.
+                  <div className={styles.retentionNote}>
+                    Retencao: denuncias armazenadas localmente por {retentionInfo.days} dias e removidas automaticamente.
+                  </div>
+                </div>
+
                 <div>
                   <Label htmlFor="category">
                     Categoria <span className={styles.required}>*</span>
@@ -76,7 +164,7 @@ export const ReportPage = () => {
                   <Select
                     value={formData.category}
                     onValueChange={(value) => {
-                      const cat = categories.find((c: any) => c.key === value);
+                      const cat = typedCategories.find((c) => c.key === value);
                       setFormData({ 
                         ...formData, 
                         category: value,
@@ -89,7 +177,7 @@ export const ReportPage = () => {
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((c: any) => (
+                      {typedCategories.map((c) => (
                         <SelectItem key={c.key} value={c.key}>
                           {c.label}
                         </SelectItem>
@@ -104,6 +192,7 @@ export const ReportPage = () => {
                   </Label>
                   <Input
                     id="location"
+                    name="location"
                     placeholder="Cidade, bairro ou endereço aproximado"
                     value={formData.location}
                     onChange={(e) => setFormData({...formData, location: e.target.value})}
@@ -116,6 +205,7 @@ export const ReportPage = () => {
                   </Label>
                   <Textarea
                     id="description"
+                    name="description"
                     placeholder="Descreva os fatos de forma detalhada, incluindo datas, pessoas envolvidas e circunstâncias..."
                     className={styles.textarea}
                     value={formData.description}
@@ -140,6 +230,7 @@ export const ReportPage = () => {
                   <div className={styles.fileInputWrapper}>
                     <Input
                       id="image"
+                      name="attachment"
                       type="file"
                       accept="image/*"
                       onChange={handleImageChange}
@@ -153,21 +244,25 @@ export const ReportPage = () => {
                   </div>
                 </div>
 
+                
+
                 <div className={styles.infoBox}>
                   <p className={styles.infoText}>
-                    <strong>Importante:</strong> Este sistema garante total anonimato e segue as diretrizes da LGPD. 
-                    Não coletamos dados pessoais e utilizamos criptografia de ponta a ponta.
+                    Os dados informados serão utilizados exclusivamente para registro e apuração da denúncia.
                   </p>
                 </div>
+
+                {error && <div className={styles.errorText}>{error}</div>}
+                {success && <div className={styles.successText}>{success}</div>}
 
                 <Button 
                   type="submit" 
                   className={styles.submitButton}
                   size="lg"
-                  disabled={formData.description.length < 100 || !formData.category}
+                  disabled={isSubmitting || formData.description.length < 100 || !formData.category}
                 >
                   <Send className={styles.sendIcon} />
-                  Enviar Denúncia Anônima
+                  {isSubmitting ? "Enviando..." : "Enviar Denuncia Anonima"}
                 </Button>
               </form>
             </CardContent>
