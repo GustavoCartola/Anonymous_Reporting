@@ -1,27 +1,17 @@
 [
   {
-    "key": "harassment",
-    "label": "Assédio",
+    "key": "mlr",
+    "label": "Violência contra a mulher",
     "email": "amumugranada@gmail.com"
   },
   {
-    "key": "corruption",
-    "label": "Corrupção",
-    "email": "amumugranada@gmail.com"
-  },
-  {
-    "key": "environmental",
-    "label": "Crime Ambiental",
-    "email": "amumugranada@gmail.com"
-  },
-  {
-    "key": "theft",
+    "key": "frt",
     "label": "Furto/Roubo",
     "email": "amumugranada@gmail.com"
   },
   {
-    "key": "animal_abuse",
-    "label": "Maus tratos aos animais",
+    "key": "cns",
+    "label": "Violação dos direitos do consumidor",
     "email": "amumugranada@gmail.com"
   }
 ]

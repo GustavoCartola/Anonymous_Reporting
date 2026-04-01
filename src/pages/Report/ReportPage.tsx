@@ -19,6 +19,9 @@ type CategoryOption = {
 };
 
 const typedCategories = categories as CategoryOption[];
+const sortedCategories = [...typedCategories].sort((a, b) =>
+  a.label.localeCompare(b.label, "pt-BR", { sensitivity: "base" })
+);
 const TEST_SENDER_EMAIL = "gustacartola@gmail.com";
  
 export const ReportPage = () => {
@@ -81,7 +84,6 @@ export const ReportPage = () => {
       payload.append("fromEmail", TEST_SENDER_EMAIL);
       payload.append("replyTo", TEST_SENDER_EMAIL);
       payload.append("reportNumber", generatedReportNumber);
-      payload.append("categoryKey", formData.category);
       payload.append("categoryLabel", selectedCategory?.label || "Nao informado");
       payload.append("location", formData.location);
       payload.append("description", formData.description);
@@ -150,13 +152,6 @@ export const ReportPage = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className={styles.form}>
-                <div className={styles.privacyNotice}>
-                  <strong>Anonimato:</strong> Nenhum dado pessoal e coletado. Todas as denuncias sao anonimas.
-                  <div className={styles.retentionNote}>
-                    Retencao: denuncias armazenadas localmente por {retentionInfo.days} dias e removidas automaticamente.
-                  </div>
-                </div>
-
                 <div>
                   <Label htmlFor="category">
                     Categoria <span className={styles.required}>*</span>
@@ -177,7 +172,7 @@ export const ReportPage = () => {
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                     <SelectContent>
-                      {typedCategories.map((c) => (
+                      {sortedCategories.map((c) => (
                         <SelectItem key={c.key} value={c.key}>
                           {c.label}
                         </SelectItem>
