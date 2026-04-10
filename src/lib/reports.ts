@@ -1,44 +1,32 @@
-const STORAGE_KEY = "anonymous_reports_v1";
-const RETENTION_DAYS = 30;
-const RETENTION_MS = RETENTION_DAYS * 24 * 60 * 60 * 1000;
+const REPORTS_API_URL = import.meta.env.VITE_REPORTS_API_URL || "http://localhost:8787/api/reports";
 
 export type AnonymousReport = {
   id: string;
   category: string; // tipo da denúncia
   description: string; // descrição
+  location?: string | null; // local aproximado (opcional)
+  attachmentName?: string | null;
+  attachmentType?: string | null;
+  hasAttachment?: boolean;
   createdAt: string; // ISO
 };
 
-function nowIso() {
-  return new Date().toISOString();
-}
+export type SaveAnonymousReportInput = {
+  category: string;
+  description: string;
+  location?: string | null;
+  attachment?: File | null;
+};
 
-function safeParse<T>(value: string | null): T | null {
-  if (!value) return null;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return null;
+export async function getReports(limit = 20): Promise<AnonymousReport[]> {
+  const response = await fetch(`${REPORTS_API_URL}?limit=${Math.max(1, Math.min(limit, 100))}`);
+  if (!response.ok) {
+    throw new Error("Nao foi possivel listar as denuncias.");
   }
-}
 
-export function getReports(): AnonymousReport[] {
-  const data = safeParse<AnonymousReport[]>(localStorage.getItem(STORAGE_KEY));
-  return Array.isArray(data) ? data : [];
-}
-
-export function purgeOldReports(): void {
-  const reports = getReports();
-  const cutoff = Date.now() - RETENTION_MS;
-
-  const kept = reports.filter((r) => {
-    const t = Date.parse(r.createdAt);
-    return Number.isFinite(t) && t >= cutoff;
-  });
-
-  if (kept.length !== reports.length) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(kept));
-  }
+  const payload = await response.json();
+  const reports = payload?.reports;
+  return Array.isArray(reports) ? (reports as AnonymousReport[]) : [];
 }
 
 export function containsPersonalData(text: string): string | null {
@@ -68,24 +56,29 @@ export function containsPersonalData(text: string): string | null {
   return null;
 }
 
-export function saveReport(input: Omit<AnonymousReport, "id" | "createdAt">): AnonymousReport {
-  purgeOldReports();
+export async function saveReport(input: SaveAnonymousReportInput): Promise<AnonymousReport> {
+  const payload = new FormData();
+  payload.append("category", input.category.trim());
+  payload.append("description", input.description.trim());
+  payload.append("location", input.location?.trim() || "");
+  if (input.attachment) {
+    payload.append("attachment", input.attachment);
+  }
 
-  const report: AnonymousReport = {
-    id: crypto.randomUUID(),
-    category: input.category.trim(),
-    description: input.description.trim(),
-    createdAt: nowIso(),
-  };
+  const response = await fetch(REPORTS_API_URL, {
+    method: "POST",
+    body: payload,
+  });
 
-  const all = getReports();
-  all.unshift(report);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+  if (!response.ok) {
+    const errorResponse = await response.json().catch(() => ({}));
+    throw new Error(errorResponse?.message || "Falha ao registrar denuncia no banco.");
+  }
 
-  return report;
+  const savedReport = (await response.json()) as AnonymousReport;
+  return savedReport;
 }
 
 export const retentionInfo = {
-  days: RETENTION_DAYS,
-  storage: "armazenamento local do navegador (localStorage)",
+  storage: "banco de dados PostgreSQL",
 };

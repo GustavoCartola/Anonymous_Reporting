@@ -101,9 +101,11 @@ export const ReportPage = () => {
         throw new Error(errorResponse?.message || "Falha no servidor de e-mail.");
       }
 
-      saveReport({
+      await saveReport({
         category: formData.category,
         description: formData.description,
+        location: formData.location,
+        attachment: formData.image,
       });
 
       toast({
@@ -113,7 +115,7 @@ export const ReportPage = () => {
       });
 
       setSuccess(
-        `Denuncia ${generatedReportNumber} enviada para ${selectedEmail} e registrada localmente. Retencao: ${retentionInfo.days} dias (${retentionInfo.storage}).`
+        `Denuncia ${generatedReportNumber} enviada para ${selectedEmail} e registrada em ${retentionInfo.storage}.`
       );
 
       setFormData({
