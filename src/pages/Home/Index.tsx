@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-security.jpg";
 import styles from './Index.module.css';
 
-const Index = () => {
-  const navigate = useNavigate();
+const Inicio = () => {
+  const navegar = useNavigate();
 
   return (
     <div className={styles.container}>
@@ -45,7 +45,7 @@ const Index = () => {
                 size="lg" 
                 variant="secondary" 
                 className={styles.button}
-                onClick={() => navigate('/denuncia')}
+                onClick={() => navegar('/denuncia')}
               >
                 Realizar Denúncia
               </Button>
@@ -90,4 +90,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Inicio;

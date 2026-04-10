@@ -1,17 +1,17 @@
 [
   {
-    "key": "mlr",
-    "label": "Violência contra a mulher",
+    "chave": "mlr",
+    "rotulo": "Violência contra a mulher",
     "email": "amumugranada@gmail.com"
   },
   {
-    "key": "frt",
-    "label": "Furto/Roubo",
+    "chave": "frt",
+    "rotulo": "Furto/Roubo",
     "email": "amumugranada@gmail.com"
   },
   {
-    "key": "cns",
-    "label": "Violação dos direitos do consumidor",
+    "chave": "cns",
+    "rotulo": "Violação dos direitos do consumidor",
     "email": "amumugranada@gmail.com"
   }
 ]

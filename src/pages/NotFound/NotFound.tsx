@@ -3,15 +3,15 @@ import { useEffect } from "react";
 import heroImage from "@/assets/hero-security.jpg";
 import styles from './NotFound.module.css';
 
-const NotFound = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+const NaoEncontrada = () => {
+  const localizacao = useLocation();
+  const navegar = useNavigate();
 
   useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    console.error("Erro 404: usuário tentou acessar rota inexistente:", localizacao.pathname);
     // Redireciona automaticamente para a página inicial
-    navigate("/", { replace: true });
-  }, [location.pathname, navigate]);
+    navegar("/", { replace: true });
+  }, [localizacao.pathname, navegar]);
 
   return (
     <div className={styles.container}>
@@ -37,4 +37,4 @@ const NotFound = () => {
   );
 };
 
-export default NotFound;
+export default NaoEncontrada;

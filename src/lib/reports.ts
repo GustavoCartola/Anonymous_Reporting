@@ -1,73 +1,76 @@
-const REPORTS_API_URL = import.meta.env.VITE_REPORTS_API_URL || "http://localhost:8787/api/reports";
+const API_DENUNCIAS_URL =
+  import.meta.env.VITE_API_DENUNCIAS_URL ||
+  import.meta.env.VITE_REPORTS_API_URL ||
+  "http://localhost:8787/api/denuncias";
 
-export type AnonymousReport = {
+export type DenunciaAnonima = {
   id: string;
-  category: string; // tipo da denúncia
-  description: string; // descrição
-  location?: string | null; // local aproximado (opcional)
-  attachmentName?: string | null;
-  attachmentType?: string | null;
-  hasAttachment?: boolean;
-  createdAt: string; // ISO
+  categoria: string;
+  descricao: string;
+  localizacao?: string | null;
+  nomeAnexo?: string | null;
+  tipoAnexo?: string | null;
+  possuiAnexo?: boolean;
+  criadoEm: string;
 };
 
-export type SaveAnonymousReportInput = {
-  category: string;
-  description: string;
-  location?: string | null;
-  attachment?: File | null;
+export type EntradaSalvarDenuncia = {
+  categoria: string;
+  descricao: string;
+  localizacao?: string | null;
+  anexo?: File | null;
 };
 
-export async function getReports(limit = 20): Promise<AnonymousReport[]> {
-  const response = await fetch(`${REPORTS_API_URL}?limit=${Math.max(1, Math.min(limit, 100))}`);
+export async function listarDenuncias(limit = 20): Promise<DenunciaAnonima[]> {
+  const response = await fetch(`${API_DENUNCIAS_URL}?limit=${Math.max(1, Math.min(limit, 100))}`);
   if (!response.ok) {
     throw new Error("Nao foi possivel listar as denuncias.");
   }
 
   const payload = await response.json();
-  const reports = payload?.reports;
-  return Array.isArray(reports) ? (reports as AnonymousReport[]) : [];
+  const denuncias = payload?.denuncias;
+  return Array.isArray(denuncias) ? (denuncias as DenunciaAnonima[]) : [];
 }
 
-export function containsPersonalData(text: string): string | null {
-  const t = text ?? "";
+export function contemDadosPessoais(texto: string): string | null {
+  const textoNormalizado = texto ?? "";
 
   // e-mail
-  if (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(t)) {
+  if (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(textoNormalizado)) {
     return "Não inclua e-mail na denúncia.";
   }
 
   // CPF (com ou sem pontuação) - checagem simples por padrão de 11 dígitos
-  const digits = t.replace(/\D/g, "");
-  if (digits.length >= 11 && /\b\d{11}\b/.test(digits)) {
+  const digitos = textoNormalizado.replace(/\D/g, "");
+  if (digitos.length >= 11 && /\b\d{11}\b/.test(digitos)) {
     return "Não inclua CPF/identificadores numéricos na denúncia.";
   }
 
   // telefone (padrões comuns BR)
-  if (/\b(\+?55\s?)?(\(?\d{2}\)?\s?)?\d{4,5}-?\d{4}\b/.test(t)) {
+  if (/\b(\+?55\s?)?(\(?\d{2}\)?\s?)?\d{4,5}-?\d{4}\b/.test(textoNormalizado)) {
     return "Não inclua telefone na denúncia.";
   }
 
   // incentivo para não inserir nome (heurística leve)
-  if (/\b(meu nome é|sou o|sou a|eu,\s*[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ])/i.test(t)) {
+  if (/\b(meu nome é|sou o|sou a|eu,\s*[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ])/i.test(textoNormalizado)) {
     return "Evite inserir nomes/identificação pessoal na denúncia.";
   }
 
   return null;
 }
 
-export async function saveReport(input: SaveAnonymousReportInput): Promise<AnonymousReport> {
-  const payload = new FormData();
-  payload.append("category", input.category.trim());
-  payload.append("description", input.description.trim());
-  payload.append("location", input.location?.trim() || "");
-  if (input.attachment) {
-    payload.append("attachment", input.attachment);
+export async function salvarDenuncia(input: EntradaSalvarDenuncia): Promise<DenunciaAnonima> {
+  const formulario = new FormData();
+  formulario.append("categoria", input.categoria.trim());
+  formulario.append("descricao", input.descricao.trim());
+  formulario.append("localizacao", input.localizacao?.trim() || "");
+  if (input.anexo) {
+    formulario.append("anexo", input.anexo);
   }
 
-  const response = await fetch(REPORTS_API_URL, {
+  const response = await fetch(API_DENUNCIAS_URL, {
     method: "POST",
-    body: payload,
+    body: formulario,
   });
 
   if (!response.ok) {
@@ -75,10 +78,10 @@ export async function saveReport(input: SaveAnonymousReportInput): Promise<Anony
     throw new Error(errorResponse?.message || "Falha ao registrar denuncia no banco.");
   }
 
-  const savedReport = (await response.json()) as AnonymousReport;
-  return savedReport;
+  const denunciaSalva = (await response.json()) as DenunciaAnonima;
+  return denunciaSalva;
 }
 
-export const retentionInfo = {
-  storage: "banco de dados PostgreSQL",
+export const informacoesRetencao = {
+  armazenamento: "banco de dados PostgreSQL",
 };

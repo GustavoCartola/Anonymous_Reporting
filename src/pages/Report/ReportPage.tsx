@@ -9,91 +9,95 @@ import { FileText, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import heroImage from "@/assets/hero-security.jpg";
 import styles from './ReportPage.module.css';
-import categories from "@/data/categories.json";
-import { containsPersonalData, retentionInfo, saveReport } from "@/lib/reports";
+import categorias from "@/data/categories.json";
+import { contemDadosPessoais, informacoesRetencao, salvarDenuncia } from "@/lib/reports";
 
-type CategoryOption = {
-  key: string;
-  label: string;
+type OpcaoCategoria = {
+  chave: string;
+  rotulo: string;
   email: string;
 };
 
-const typedCategories = categories as CategoryOption[];
-const sortedCategories = [...typedCategories].sort((a, b) =>
-  a.label.localeCompare(b.label, "pt-BR", { sensitivity: "base" })
+const categoriasTipadas = categorias as OpcaoCategoria[];
+const categoriasOrdenadas = [...categoriasTipadas].sort((a, b) =>
+  a.rotulo.localeCompare(b.rotulo, "pt-BR", { sensitivity: "base" })
 );
-const TEST_SENDER_EMAIL = "gustacartola@gmail.com";
+const EMAIL_REMETENTE_TESTE = "gustacartola@gmail.com";
  
-export const ReportPage = () => {
-  const [formData, setFormData] = useState({
-    category: "",
+export const PaginaDenuncia = () => {
+  const [dadosFormulario, setDadosFormulario] = useState({
+    categoria: "",
     email: "",
-    description: "",
-    location: "",
-    image: null as File | null
+    descricao: "",
+    localizacao: "",
+    imagem: null as File | null
   });
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [sucesso, setSucesso] = useState<string | null>(null);
+  const [estaEnviando, setEstaEnviando] = useState(false);
   const { toast } = useToast();
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData({...formData, image: file});
+  const handleMudancaImagem = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const arquivo = e.target.files?.[0];
+    if (arquivo) {
+      setDadosFormulario({ ...dadosFormulario, imagem: arquivo });
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
+    setErro(null);
+    setSucesso(null);
 
-    const apiUrl = import.meta.env.VITE_REPORT_API_URL || "http://localhost:8787/api/reports/email";
+    const urlApiEmail =
+      import.meta.env.VITE_API_DENUNCIAS_EMAIL_URL ||
+      import.meta.env.VITE_REPORT_API_URL ||
+      "http://localhost:8787/api/denuncias/email";
 
-    if (!formData.category.trim()) {
-      setError("Selecione o tipo da denúncia.");
+    if (!dadosFormulario.categoria.trim()) {
+      setErro("Selecione o tipo da denúncia.");
       return;
     }
 
-    if (!formData.description.trim() || formData.description.trim().length < 100) {
-      setError("Descreva a denúncia com mais detalhes (mín. 100 caracteres).");
+    if (!dadosFormulario.descricao.trim() || dadosFormulario.descricao.trim().length < 100) {
+      setErro("Descreva a denúncia com mais detalhes (mín. 100 caracteres).");
       return;
     }
 
-    const piiMsg = containsPersonalData(formData.description);
-    if (piiMsg) {
-      setError(piiMsg);
+    const mensagemDadosPessoais = contemDadosPessoais(dadosFormulario.descricao);
+    if (mensagemDadosPessoais) {
+      setErro(mensagemDadosPessoais);
       return;
     }
 
-    const selectedCategory = typedCategories.find((c) => c.key === formData.category);
-    const selectedEmail = selectedCategory?.email || formData.email;
-    if (!selectedEmail) {
-      setError("Nao foi possivel determinar o e-mail do orgao responsavel para a categoria escolhida.");
+    const categoriaSelecionada = categoriasTipadas.find((categoria) => categoria.chave === dadosFormulario.categoria);
+    const emailSelecionado = categoriaSelecionada?.email || dadosFormulario.email;
+    if (!emailSelecionado) {
+      setErro("Nao foi possivel determinar o e-mail do orgao responsavel para a categoria escolhida.");
       return;
     }
 
-    const generatedReportNumber = Date.now().toString();
+    const numeroDenunciaGerado = Date.now().toString();
 
-    setIsSubmitting(true);
+    setEstaEnviando(true);
 
     try {
-      const payload = new FormData();
-      payload.append("toEmail", selectedEmail);
-      payload.append("fromEmail", TEST_SENDER_EMAIL);
-      payload.append("replyTo", TEST_SENDER_EMAIL);
-      payload.append("reportNumber", generatedReportNumber);
-      payload.append("categoryLabel", selectedCategory?.label || "Nao informado");
-      payload.append("location", formData.location);
-      payload.append("description", formData.description);
-      if (formData.image) {
-        payload.append("attachment", formData.image);
+      const formularioEmail = new FormData();
+      formularioEmail.append("emailDestino", emailSelecionado);
+      formularioEmail.append("emailRemetente", EMAIL_REMETENTE_TESTE);
+      formularioEmail.append("respostaPara", EMAIL_REMETENTE_TESTE);
+      formularioEmail.append("numeroDenuncia", numeroDenunciaGerado);
+      formularioEmail.append("rotuloCategoria", categoriaSelecionada?.rotulo || "Nao informado");
+      formularioEmail.append("chaveCategoria", categoriaSelecionada?.chave || "");
+      formularioEmail.append("localizacao", dadosFormulario.localizacao);
+      formularioEmail.append("descricao", dadosFormulario.descricao);
+      if (dadosFormulario.imagem) {
+        formularioEmail.append("anexo", dadosFormulario.imagem);
       }
 
-      const response = await fetch(apiUrl, {
+      const response = await fetch(urlApiEmail, {
         method: "POST",
-        body: payload,
+        body: formularioEmail,
       });
 
       if (!response.ok) {
@@ -101,35 +105,35 @@ export const ReportPage = () => {
         throw new Error(errorResponse?.message || "Falha no servidor de e-mail.");
       }
 
-      await saveReport({
-        category: formData.category,
-        description: formData.description,
-        location: formData.location,
-        attachment: formData.image,
+      await salvarDenuncia({
+        categoria: dadosFormulario.categoria,
+        descricao: dadosFormulario.descricao,
+        localizacao: dadosFormulario.localizacao,
+        anexo: dadosFormulario.imagem,
       });
 
       toast({
-        title: "Denuncia enviada com sucesso!",
-        description: `Denuncia ${generatedReportNumber} encaminhada para ${selectedEmail}.`,
+        title: "Denúncia enviada com sucesso!",
+        description: `Denúncia ${numeroDenunciaGerado} encaminhada para ${emailSelecionado}.`,
         duration: 5000,
       });
 
-      setSuccess(
-        `Denuncia ${generatedReportNumber} enviada para ${selectedEmail} e registrada em ${retentionInfo.storage}.`
+      setSucesso(
+        `Denúncia ${numeroDenunciaGerado} enviada para ${emailSelecionado} e registrada em ${informacoesRetencao.armazenamento}.`
       );
 
-      setFormData({
-        category: "",
+      setDadosFormulario({
+        categoria: "",
         email: "",
-        description: "",
-        location: "",
-        image: null,
+        descricao: "",
+        localizacao: "",
+        imagem: null,
       });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Falha ao encaminhar o e-mail da denuncia.";
-      setError(`${msg} Verifique a configuracao do servidor SMTP e tente novamente.`);
+      const mensagem = err instanceof Error ? err.message : "Falha ao encaminhar o e-mail da denuncia.";
+      setErro(`${mensagem} Verifique a configuracao do servidor SMTP e tente novamente.`);
     } finally {
-      setIsSubmitting(false);
+      setEstaEnviando(false);
     }
   };
 
@@ -159,13 +163,13 @@ export const ReportPage = () => {
                     Categoria <span className={styles.required}>*</span>
                   </Label>
                   <Select
-                    value={formData.category}
+                    value={dadosFormulario.categoria}
                     onValueChange={(value) => {
-                      const cat = typedCategories.find((c) => c.key === value);
-                      setFormData({ 
-                        ...formData, 
-                        category: value,
-                        email: cat ? cat.email : ""
+                      const categoria = categoriasTipadas.find((item) => item.chave === value);
+                      setDadosFormulario({ 
+                        ...dadosFormulario, 
+                        categoria: value,
+                        email: categoria ? categoria.email : ""
                       });
                     }}
                     required
@@ -174,9 +178,9 @@ export const ReportPage = () => {
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                     <SelectContent>
-                      {sortedCategories.map((c) => (
-                        <SelectItem key={c.key} value={c.key}>
-                          {c.label}
+                      {categoriasOrdenadas.map((categoria) => (
+                        <SelectItem key={categoria.chave} value={categoria.chave}>
+                          {categoria.rotulo}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -184,30 +188,30 @@ export const ReportPage = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="location">
+                  <Label htmlFor="localizacao">
                     Local (Opcional)
                   </Label>
                   <Input
-                    id="location"
-                    name="location"
+                    id="localizacao"
+                    name="localizacao"
                     placeholder="Cidade, bairro ou endereço aproximado"
-                    value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    value={dadosFormulario.localizacao}
+                    onChange={(e) => setDadosFormulario({ ...dadosFormulario, localizacao: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="description">
+                  <Label htmlFor="descricao">
                     Descrição detalhada <span className={styles.required}>*</span>
                   </Label>
                   <Textarea
-                    id="description"
-                    name="description"
+                    id="descricao"
+                    name="descricao"
                     placeholder="Descreva os fatos de forma detalhada, incluindo datas, pessoas envolvidas e circunstâncias..."
                     className={styles.textarea}
-                    value={formData.description}
+                    value={dadosFormulario.descricao}
                     onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
+                      setDadosFormulario({ ...dadosFormulario, descricao: e.target.value })
                     }
                     required
                     minLength={100}
@@ -216,26 +220,26 @@ export const ReportPage = () => {
                     className={`${styles.charCount}`}
                     aria-live="polite"
                   >
-                    {formData.description.length}/100 mínimo
+                    {dadosFormulario.descricao.length}/100 mínimo
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="image">
+                  <Label htmlFor="imagem">
                     Anexar Imagem (Opcional)
                   </Label>
                   <div className={styles.fileInputWrapper}>
                     <Input
-                      id="image"
-                      name="attachment"
+                      id="imagem"
+                      name="anexo"
                       type="file"
                       accept="image/*"
-                      onChange={handleImageChange}
+                      onChange={handleMudancaImagem}
                       className={styles.fileInput}
                     />
-                    {formData.image && (
+                    {dadosFormulario.imagem && (
                       <p className={styles.fileSelected}>
-                        Arquivo selecionado: {formData.image.name}
+                        Arquivo selecionado: {dadosFormulario.imagem.name}
                       </p>
                     )}
                   </div>
@@ -249,17 +253,17 @@ export const ReportPage = () => {
                   </p>
                 </div>
 
-                {error && <div className={styles.errorText}>{error}</div>}
-                {success && <div className={styles.successText}>{success}</div>}
+                {erro && <div className={styles.errorText}>{erro}</div>}
+                {sucesso && <div className={styles.successText}>{sucesso}</div>}
 
                 <Button 
                   type="submit" 
                   className={styles.submitButton}
                   size="lg"
-                  disabled={isSubmitting || formData.description.length < 100 || !formData.category}
+                  disabled={estaEnviando || dadosFormulario.descricao.length < 100 || !dadosFormulario.categoria}
                 >
                   <Send className={styles.sendIcon} />
-                  {isSubmitting ? "Enviando..." : "Enviar Denuncia Anonima"}
+                  {estaEnviando ? "Enviando..." : "Enviar Denúncia Anônima"}
                 </Button>
               </form>
             </CardContent>
@@ -270,4 +274,4 @@ export const ReportPage = () => {
   );
 };
 
-export default ReportPage;
+export default PaginaDenuncia;

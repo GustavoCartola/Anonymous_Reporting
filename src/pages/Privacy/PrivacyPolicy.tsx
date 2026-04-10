@@ -24,10 +24,10 @@ export default function PrivacyPolicy() {
       </ul>
 
       <h2>3) Onde os dados ficam armazenados</h2>
-      <p>As denúncias ficam armazenadas localmente no navegador (localStorage). Não há envio para servidor.</p>
+      <p>As denúncias ficam armazenadas em banco de dados PostgreSQL, com envio ao servidor para registro e apuração.</p>
 
       <h2>4) Retenção</h2>
-      <p>As denúncias são mantidas por até <strong>30 dias</strong> e removidas automaticamente.</p>
+      <p>As denúncias são mantidas conforme a política operacional do sistema e as regras definidas pelo órgão responsável.</p>
 
       <h2>5) Prevenção de dados sensíveis</h2>
       <p>
