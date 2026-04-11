@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { FileText, Send } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-security.jpg";
 import styles from './ReportPage.module.css';
 import categorias from "@/data/categories.json";
@@ -34,7 +34,7 @@ export const PaginaDenuncia = () => {
   });
   const [erro, setErro] = useState<string | null>(null);
   const [estaEnviando, setEstaEnviando] = useState(false);
-  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleMudancaImagem = (e: React.ChangeEvent<HTMLInputElement>) => {
     const arquivo = e.target.files?.[0];
@@ -110,11 +110,6 @@ export const PaginaDenuncia = () => {
         anexo: dadosFormulario.imagem,
       });
 
-      toast({
-        title: "Denúncia enviada com sucesso",
-        duration: 5000,
-      });
-
       setDadosFormulario({
         categoria: "",
         email: "",
@@ -122,6 +117,8 @@ export const PaginaDenuncia = () => {
         localizacao: "",
         imagem: null,
       });
+
+      navigate("/agradecimento");
     } catch (err) {
       const mensagem = err instanceof Error ? err.message : "Falha ao encaminhar o e-mail da denuncia.";
       setErro(`${mensagem} Verifique a configuracao do servidor SMTP e tente novamente.`);
