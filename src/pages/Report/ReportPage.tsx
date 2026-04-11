@@ -159,7 +159,7 @@ export const PaginaDenuncia = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className={styles.form}>
                 <div>
-                  <Label htmlFor="category">
+                  <Label htmlFor="category" className={styles.label}>
                     Categoria <span className={styles.required}>*</span>
                   </Label>
                   <Select
@@ -174,10 +174,10 @@ export const PaginaDenuncia = () => {
                     }}
                     required
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className={styles.field}>
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className={styles.selectContent}>
                       {categoriasOrdenadas.map((categoria) => (
                         <SelectItem key={categoria.chave} value={categoria.chave}>
                           {categoria.rotulo}
@@ -188,27 +188,28 @@ export const PaginaDenuncia = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="localizacao">
+                  <Label htmlFor="localizacao" className={styles.label}>
                     Local (Opcional)
                   </Label>
                   <Input
                     id="localizacao"
                     name="localizacao"
                     placeholder="Cidade, bairro ou endereço aproximado"
+                    className={styles.field}
                     value={dadosFormulario.localizacao}
                     onChange={(e) => setDadosFormulario({ ...dadosFormulario, localizacao: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="descricao">
+                  <Label htmlFor="descricao" className={styles.label}>
                     Descrição detalhada <span className={styles.required}>*</span>
                   </Label>
                   <Textarea
                     id="descricao"
                     name="descricao"
                     placeholder="Descreva os fatos de forma detalhada, incluindo datas, pessoas envolvidas e circunstâncias..."
-                    className={styles.textarea}
+                    className={`${styles.textarea} ${styles.field}`}
                     value={dadosFormulario.descricao}
                     onChange={(e) =>
                       setDadosFormulario({ ...dadosFormulario, descricao: e.target.value })
@@ -225,7 +226,7 @@ export const PaginaDenuncia = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="imagem">
+                  <Label htmlFor="imagem" className={styles.label}>
                     Anexar Imagem (Opcional)
                   </Label>
                   <div className={styles.fileInputWrapper}>
@@ -235,7 +236,7 @@ export const PaginaDenuncia = () => {
                       type="file"
                       accept="image/*"
                       onChange={handleMudancaImagem}
-                      className={styles.fileInput}
+                      className={`${styles.fileInput} ${styles.field}`}
                     />
                     {dadosFormulario.imagem && (
                       <p className={styles.fileSelected}>
