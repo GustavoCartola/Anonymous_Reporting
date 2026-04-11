@@ -5,8 +5,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { FileText, Send } from "lucide-react";
+import { FileText, Loader2, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import heroImage from "@/assets/hero-security.jpg";
 import styles from './ReportPage.module.css';
 import categorias from "@/data/categories.json";
@@ -32,9 +33,18 @@ export const PaginaDenuncia = () => {
     localizacao: "",
     imagem: null as File | null
   });
-  const [erro, setErro] = useState<string | null>(null);
   const [estaEnviando, setEstaEnviando] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const exibirErro = (mensagem: string) => {
+    toast({
+      variant: "destructive",
+      title: "Erro ao enviar denúncia",
+      description: mensagem,
+      duration: 5000,
+    });
+  };
 
   const handleMudancaImagem = (e: React.ChangeEvent<HTMLInputElement>) => {
     const arquivo = e.target.files?.[0];
@@ -45,7 +55,6 @@ export const PaginaDenuncia = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErro(null);
 
     const urlApiEmail =
       import.meta.env.VITE_API_DENUNCIAS_EMAIL_URL ||
@@ -53,25 +62,25 @@ export const PaginaDenuncia = () => {
       "http://localhost:8787/api/denuncias/email";
 
     if (!dadosFormulario.categoria.trim()) {
-      setErro("Selecione o tipo da denúncia.");
+      exibirErro("Selecione o tipo da denúncia.");
       return;
     }
 
     if (!dadosFormulario.descricao.trim() || dadosFormulario.descricao.trim().length < 100) {
-      setErro("Descreva a denúncia com mais detalhes (mín. 100 caracteres).");
+      exibirErro("Descreva a denúncia com mais detalhes (mín. 100 caracteres).");
       return;
     }
 
     const mensagemDadosPessoais = contemDadosPessoais(dadosFormulario.descricao);
     if (mensagemDadosPessoais) {
-      setErro(mensagemDadosPessoais);
+      exibirErro(mensagemDadosPessoais);
       return;
     }
 
     const categoriaSelecionada = categoriasTipadas.find((categoria) => categoria.chave === dadosFormulario.categoria);
     const emailSelecionado = categoriaSelecionada?.email || dadosFormulario.email;
     if (!emailSelecionado) {
-      setErro("Nao foi possivel determinar o e-mail do orgao responsavel para a categoria escolhida.");
+      exibirErro("Nao foi possivel determinar o e-mail do orgao responsavel para a categoria escolhida.");
       return;
     }
 
@@ -121,7 +130,7 @@ export const PaginaDenuncia = () => {
       navigate("/agradecimento");
     } catch (err) {
       const mensagem = err instanceof Error ? err.message : "Falha ao encaminhar o e-mail da denuncia.";
-      setErro(`${mensagem} Verifique a configuracao do servidor SMTP e tente novamente.`);
+      exibirErro(`${mensagem} Verifique a configuracao do servidor SMTP e tente novamente.`);
     } finally {
       setEstaEnviando(false);
     }
@@ -140,6 +149,11 @@ export const PaginaDenuncia = () => {
       <div className={styles.wrapper}>
         <div className={styles.maxWidth}>
           <Card className={styles.card}>
+            {estaEnviando && (
+              <div className={styles.formLoadingOverlay} aria-live="polite" aria-busy="true">
+                <Loader2 className={styles.formLoadingSpinner} />
+              </div>
+            )}
             <CardHeader>
               <CardTitle className={styles.cardTitle}>
                 <FileText className={styles.fileIcon} />
@@ -239,18 +253,14 @@ export const PaginaDenuncia = () => {
                   </div>
                 </div>
 
-                
-
-                {erro && <div className={styles.errorText}>{erro}</div>}
-
                 <Button 
                   type="submit" 
                   className={styles.submitButton}
                   size="lg"
                   disabled={estaEnviando || dadosFormulario.descricao.length < 100 || !dadosFormulario.categoria}
                 >
-                  <Send className={styles.sendIcon} />
-                  {estaEnviando ? "Enviando..." : "Enviar Denúncia Anônima"}
+                                  <Send className={styles.sendIcon} />
+                                  Enviar Denúncia Anônima
                 </Button>
               </form>
             </CardContent>
