@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import heroImage from "@/assets/hero-security.jpg";
 import styles from './ReportPage.module.css';
 import categorias from "@/data/categories.json";
-import { contemDadosPessoais, informacoesRetencao, salvarDenuncia } from "@/lib/reports";
+import { contemDadosPessoais, salvarDenuncia } from "@/lib/reports";
 
 type OpcaoCategoria = {
   chave: string;
@@ -33,7 +33,6 @@ export const PaginaDenuncia = () => {
     imagem: null as File | null
   });
   const [erro, setErro] = useState<string | null>(null);
-  const [sucesso, setSucesso] = useState<string | null>(null);
   const [estaEnviando, setEstaEnviando] = useState(false);
   const { toast } = useToast();
 
@@ -47,7 +46,6 @@ export const PaginaDenuncia = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErro(null);
-    setSucesso(null);
 
     const urlApiEmail =
       import.meta.env.VITE_API_DENUNCIAS_EMAIL_URL ||
@@ -113,14 +111,9 @@ export const PaginaDenuncia = () => {
       });
 
       toast({
-        title: "Denúncia enviada com sucesso!",
-        description: `Denúncia ${numeroDenunciaGerado} encaminhada para ${emailSelecionado}.`,
+        title: "Denúncia enviada com sucesso",
         duration: 5000,
       });
-
-      setSucesso(
-        `Denúncia ${numeroDenunciaGerado} enviada para ${emailSelecionado} e registrada em ${informacoesRetencao.armazenamento}.`
-      );
 
       setDadosFormulario({
         categoria: "",
@@ -205,57 +198,53 @@ export const PaginaDenuncia = () => {
                   <Label htmlFor="descricao" className={styles.label}>
                     Descrição detalhada <span className={styles.required}>*</span>
                   </Label>
-                  <Textarea
-                    id="descricao"
-                    name="descricao"
-                    placeholder="Descreva os fatos de forma detalhada, incluindo datas, pessoas envolvidas e circunstâncias..."
-                    className={`${styles.textarea} ${styles.field}`}
-                    value={dadosFormulario.descricao}
-                    onChange={(e) =>
-                      setDadosFormulario({ ...dadosFormulario, descricao: e.target.value })
-                    }
-                    required
-                    minLength={100}
-                  />
-                  <div
-                    className={`${styles.charCount}`}
-                    aria-live="polite"
-                  >
-                    {dadosFormulario.descricao.length}/100 mínimo
+                  <div className={styles.descricaoWrapper}>
+                    <Textarea
+                      id="descricao"
+                      name="descricao"
+                      placeholder="Descreva os fatos de forma detalhada, incluindo datas, pessoas envolvidas e circunstâncias..."
+                      className={`${styles.textarea} ${styles.field}`}
+                      value={dadosFormulario.descricao}
+                      onChange={(e) =>
+                        setDadosFormulario({ ...dadosFormulario, descricao: e.target.value })
+                      }
+                      required
+                      minLength={100}
+                    />
+                    <div
+                      className={`${styles.charCount}`}
+                      aria-live="polite"
+                    >
+                      {dadosFormulario.descricao.length}/100 mínimo
+                    </div>
                   </div>
                 </div>
 
                 <div>
                   <Label htmlFor="imagem" className={styles.label}>
-                    Anexar Imagem (Opcional)
+                    Anexos (Opcional)
                   </Label>
                   <div className={styles.fileInputWrapper}>
-                    <Input
+                    <input
                       id="imagem"
                       name="anexo"
                       type="file"
                       accept="image/*"
                       onChange={handleMudancaImagem}
-                      className={`${styles.fileInput} ${styles.field}`}
+                      className={styles.hiddenFileInput}
                     />
-                    {dadosFormulario.imagem && (
-                      <p className={styles.fileSelected}>
-                        Arquivo selecionado: {dadosFormulario.imagem.name}
-                      </p>
-                    )}
+                    <label htmlFor="imagem" className={styles.filePicker}>
+                      <span className={styles.filePickerButton}>Escolher arquivo</span>
+                      <span className={styles.filePickerName}>
+                        {dadosFormulario.imagem ? dadosFormulario.imagem.name : "Nenhum arquivo escolhido"}
+                      </span>
+                    </label>
                   </div>
                 </div>
 
                 
 
-                <div className={styles.infoBox}>
-                  <p className={styles.infoText}>
-                    Os dados informados serão utilizados exclusivamente para registro e apuração da denúncia.
-                  </p>
-                </div>
-
                 {erro && <div className={styles.errorText}>{erro}</div>}
-                {sucesso && <div className={styles.successText}>{sucesso}</div>}
 
                 <Button 
                   type="submit" 
