@@ -57,9 +57,9 @@ const Inicio = () => {
                 <div className={styles.featureIcon}>
                   <Lock className={styles.icon} />
                 </div>
-                <h3 className={styles.featureTitle}>100% Anônimo</h3>
+                <h3 className={styles.featureTitle}>Canal Anônimo</h3>
                 <p className={styles.featureDescription}>
-                  Sua identidade permanece protegida durante todo o processo
+                  Registro de denúncias sem identificação pessoal obrigatória.
                 </p>
               </div>
               
@@ -67,9 +67,9 @@ const Inicio = () => {
                 <div className={styles.featureIcon}>
                   <Shield className={styles.icon} />
                 </div>
-                <h3 className={styles.featureTitle}>Seguro</h3>
+                <h3 className={styles.featureTitle}>Privacidade em Primeiro Lugar</h3>
                 <p className={styles.featureDescription}>
-                  Criptografia de ponta a ponta para garantir total segurança
+                  Coleta apenas das informações essenciais para análise do caso.
                 </p>
               </div>
               
@@ -77,9 +77,9 @@ const Inicio = () => {
                 <div className={styles.featureIcon}>
                   <Users className={styles.icon} />
                 </div>
-                <h3 className={styles.featureTitle}>LGPD</h3>
+                <h3 className={styles.featureTitle}>Uso Fácil e Intuitivo</h3>
                 <p className={styles.featureDescription}>
-                  Sistema em conformidade com a Lei Geral de Proteção de Dados
+                  Navegação clara e etapas simplificadas para facilitar o uso por qualquer pessoa.
                 </p>
               </div>
             </div>
