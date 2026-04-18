@@ -12,9 +12,9 @@ VITE_REPORT_API_URL=http://localhost:8787/api/reports/email
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_SECURE=false
-SMTP_USER=gustacartola@gmail.com
-SMTP_PASS=sua_senha_de_app_gmail
-MAIL_FROM="Sistema de Denuncia Anonima <gustacartola@gmail.com>"
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+MAIL_FROM="Sistema de Denuncia Anonima <your_email@gmail.com>"
 ```
 
 ### 2) Sobre a senha do Gmail
