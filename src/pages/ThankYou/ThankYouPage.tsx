@@ -30,7 +30,7 @@ const PaginaAgradecimento = () => {
           </p>
 
           <p className={styles.textSecondary}>
-            Cada denuncia registrada contribui para um ambiente mais justo, seguro e melhor para todos.
+            Cada denuncia registrada contribui para uma sociedade mais justa, segura e melhor para todos.
           </p>
 
           <div className={styles.actions}>
