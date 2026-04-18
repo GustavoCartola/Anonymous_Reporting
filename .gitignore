@@ -27,3 +27,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# TCC writing workspace (never commit)
+/tcc/
